@@ -1,0 +1,23 @@
+
+
+
+#ceci est un code correcteur 2 bits sur 16
+
+class uart_bus:
+
+def send(data)
+# todo envoyer data a travers la laison série
+
+def receive()
+# recevoir les données
+
+def insert_errore_in_byte(nberror, byte)
+# inserer les erreur
+
+def verify(data_send, data_receive)
+# checker que la donnée recu et la donné envoyé est la meme
+
+class corrector_code:
+
+def 
+
