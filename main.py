@@ -39,12 +39,35 @@ class rs232_bus:
 class corrector_code:
 
     def encode(data):
-        #ici la fonction qui encode se que tu veux envoyer
+        #ici la fonction qui encode ce que tu veux envoyer
         pass
 
-    def decode():
-        #ici retourne la le text apres decodage
-        pass
+    def decode(data,distance):
+            #ici retourne la le text apres decodage
+	    bitCodedIndex = 0
+	    codedList = data
+	    len = len(data) * 8
+	    index = 0
+	    minDist = 0xffffffff
+	    dist
+	    NB_LINE = 64
+	    QUEUE_LEN = 8
+            #treilli = Noeud[NB_LINE, len / 2 + 1]
+
+		
+      
+        
+
+class Noeud:
+
+   def __init__(self):
+       self.dist = 0xffffffff
+       self.val = 255
+       self.prevx = -1
+       self.prevy = -1
+       self.buffer = 0
+        
+
         
 
 if __name__ == '__main__':
