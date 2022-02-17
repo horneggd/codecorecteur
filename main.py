@@ -7,7 +7,7 @@ import os
 class rs232_bus:
 
     def __init__(self) -> None:
-        self.rs232 = serial.Serial('/dev/ttyUSB0', 19200, timeout=1)
+        self.rs232 = serial.Serial('/dev/ttyUSB0', 19200)
         self.rs232.open()
         self.test()
 
@@ -36,8 +36,16 @@ class rs232_bus:
             os.sleep(1)
 
 
-#class corrector_code:
+class corrector_code:
 
+    def encode(data):
+        #ici la fonction qui encode se que tu veux envoyer
+        pass
+
+    def decode():
+        #ici retourne la le text apres decodage
+        pass
+        
 
 if __name__ == '__main__':
     uart = rs232_bus()
