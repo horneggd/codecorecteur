@@ -1,0 +1,450 @@
+
+Conversation opened. 2 messages. 1 message unread.
+
+Skip to content
+Using Gmail with screen readers
+Meet
+Hangouts
+
+1 of 6,786
+Re: Document de Benoit
+Inbox
+
+benoit das
+3:29 PM (0 minutes ago)
+Le jeu. 17 févr. 2022 à 15:00, benoit das <benoitdas701@gmail.com> a écrit : codecorrecteur.cs
+
+benoit das
+Attachments
+3:29 PM (0 minutes ago)
+to me
+
+   
+Translate message
+Turn off for: English
+
+
+---------- Forwarded message ---------
+De : benoit das <benoitdas701@gmail.com>
+Date: jeu. 17 févr. 2022 à 15:00
+Subject: Document de Benoit
+To: benoit das <benoitdas701@gmail.com>
+
+
+codecorrecteur.cs 
+Attachments area
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Windows;
+
+namespace CodeCorrecteur.Controllers
+{
+    public class CodeController
+    {
+        private List<byte> codedList;
+        private List<byte> decodedList;
+        private int bitCodedIndex = 0, bitDecodedIndex = 0;
+        private Noeud[,] treilli;
+
+        public CodeController()
+        {
+        }
+
+        private byte getBits(int numberOfBits = 2)
+        {
+            int retVal = 0;
+            int byteIndex, bitIndex;
+
+            try
+            {
+                if (codedList == null)
+                    throw new ArgumentNullException("CodedBytes list null");
+                if (numberOfBits > 8)
+                    throw new ArgumentException("numberOfBits too big " + Convert.ToString(numberOfBits) + " (max 8)");
+                if (bitCodedIndex >= (codedList.Count() * 8))
+                    throw new ArgumentOutOfRangeException("codedIndex to BIG !");
+                if ((bitCodedIndex + numberOfBits) > (codedList.Count() * 8))
+                    throw new ArgumentException("Arg numberOfBits to big for the list");
+
+                byteIndex = bitCodedIndex / 8;
+                bitIndex = bitCodedIndex % 8;
+
+                while (numberOfBits > 0)
+                {
+                    retVal <<= 1;
+                    retVal |= (codedList[byteIndex] >> (7 - bitIndex)) & 1;
+
+                    bitIndex++;
+                    if (bitIndex >= 8)
+                    {
+                        byteIndex++;
+                        bitIndex = 0;
+                    }
+                    numberOfBits--;
+                    bitCodedIndex++;
+                }
+            }
+            catch (Exception Ex)
+            {
+                MessageBox.Show("Error : " + Ex.Message + " ici : " + Ex.Source + " (" + Ex.StackTrace + ")");
+                retVal = 0xFF;
+            }
+
+            return (byte)retVal;
+        }
+
+        private bool setBit(byte bit)
+        {
+            bool error = false;
+            int byteIndex;
+
+            try
+            {
+                if (decodedList == null)
+                    throw new ArgumentNullException("decodedBytes list null");
+                if (bit != 0 && bit != 1)
+                    throw new ArgumentException("Bad bit value");
+
+                byteIndex = bitDecodedIndex / 8;
+
+                if (byteIndex >= decodedList.Count())
+                    decodedList.Add(0);
+
+                decodedList[byteIndex] <<= 1;
+                decodedList[byteIndex] |= bit;
+                bitDecodedIndex++;
+                //! TODO : Handle MSB directly
+            }
+            catch (Exception Ex)
+            {
+                MessageBox.Show("Error : " + Ex.Message + " ici : " + Ex.Source + " (" + Ex.StackTrace + ")");
+                error = true;
+            }
+
+            return error;
+        }
+
+        private class Noeud
+        {
+            public uint dist = 0xffffffff;
+            public byte val = 255;
+            public int prevx = -1, prevy = -1;
+            public byte buffer = 0;
+        }
+
+        private byte HammingDistance(byte a, byte b)
+        {
+            byte dist = 0;
+            byte xor = (byte)(a ^ b);
+
+            while (xor != 0)
+            {
+                dist += (byte)(xor & 0x01);
+                xor >>= 1;
+            }
+            return dist;
+        }
+
+        private byte xor(byte a)
+        {
+            byte res = 0;
+            while (a != 0)
+            {
+                res ^= (byte)(a & 0x1);
+                a >>= 1;
+            }
+            return (byte)(res & 0x01);
+        }
+
+        public List<byte> encode_NASA(List<byte> data)
+        {
+            byte g1 = 0x4f, g2 = 0x6d;
+            byte buff = 0;
+            List<byte> encOut = new List<byte>();
+
+            for (byte i = 0; i < data.Count; i++)
+            {
+                byte buff_in = data.ElementAt(i);
+                UInt16 buff_out = 0;
+                for (byte j = 0; j < 8; j++)
+                {
+                    buff += (byte)(buff_in & 0x01);
+                    buff_out <<= 1;
+                    buff_out += (UInt16)xor((byte)(buff & g1));
+                    buff_out <<= 1;
+                    buff_out += (UInt16)((~xor((byte)(buff & g2))) & 0x01);
+                    buff <<= 1;
+                    buff_in >>= 1;
+                }
+                encOut.Add((byte)(buff_out >> 8));
+                encOut.Add((byte)(buff_out & 0x00ff));
+            }
+            return encOut;
+        }
+
+
+        public List<byte> encode(List<byte> data) 
+        {
+            byte g1 = 0x07, g2 = 0x05;
+            byte buff = 0;
+            List<byte> encOut = new List<byte>();
+
+            for (byte i = 0; i < data.Count; i++)
+            {
+                byte buff_in = data.ElementAt(i);
+                UInt16 buff_out = 0;
+                for (byte j = 0; j < 8; j++)
+                {
+                    buff += (byte)(buff_in & 0x01);
+                    buff_out <<= 1;
+                    buff_out += (UInt16)xor((byte)(buff & g1));
+                    buff_out <<= 1;
+                    buff_out += (UInt16)xor((byte)(buff & g2));
+                    buff <<= 1;
+                    buff_in >>= 1;
+                }
+                encOut.Add((byte)(buff_out >> 8));
+                encOut.Add((byte)(buff_out & 0x00ff));
+            }
+            return encOut;
+        }
+
+        private byte possible_path(byte val)
+        {
+            byte g1 = 0x4f, g2 = 0x6d;
+            byte res = 0;
+            res = xor((byte)(val & g1));
+            res <<= 1;
+            res += (byte)((~xor((byte)(val & g2))) & 0x01);
+
+            return res;
+        }
+
+        public List<byte> decode_NASA(List<byte> data, ref uint distance)
+        {
+            bitCodedIndex = 0;
+            codedList = data;
+            int len = data.Count * 8;
+            int index = 0;
+            uint minDist = 0xffffffff;
+            uint dist, NB_LINE = 64, QUEUE_LEN = 8;
+
+            treilli = new Noeud[NB_LINE, len / 2 + 1];
+
+            treilli[0, 0] = new Noeud();
+            treilli[0, 0].dist = 0;
+            treilli[0, 0].val = 0;
+            treilli[0, 0].buffer = 0;
+
+            for (int i = 0; i < len / 2; i++)
+            {
+                byte buff = getBits();
+                for (int j = 0; j < NB_LINE; j++)
+                {
+                    if (treilli[j, i] != null)
+                    {
+                        index = (2 * j) % 64;
+
+                        if (treilli[index, i + 1] == null)
+                            treilli[index, i + 1] = new Noeud();
+
+                        byte cmp = possible_path((byte)(treilli[j, i].buffer << 1));
+
+                        dist = HammingDistance((byte)(buff & 0x03), (byte)(cmp & 0x03)) + treilli[j, i].dist;
+
+                        if (dist < treilli[index, i + 1].dist)
+                        {
+                            treilli[index, i + 1].dist = dist;
+                            treilli[index, i + 1].val = 0;
+                            treilli[index, i + 1].prevx = j;
+                            treilli[index, i + 1].prevy = i;
+                            treilli[index, i + 1].buffer = (byte)(treilli[j, i].buffer << 1);
+                        }
+
+                        if (i < len / 2 - QUEUE_LEN)
+                        {
+                            if (treilli[index + 1, i + 1] == null)
+                                treilli[index + 1, i + 1] = new Noeud();
+
+                            cmp = possible_path((byte)(treilli[j, i].buffer << 1 | 0x01));
+
+                            dist = HammingDistance((byte)(buff & 0x03), cmp) + treilli[j, i].dist;
+
+                            if (dist < treilli[index + 1, i + 1].dist)
+                            {
+                                treilli[index + 1, i + 1].dist = dist;
+                                treilli[index + 1, i + 1].val = 1;
+                                treilli[index + 1, i + 1].prevx = j;
+                                treilli[index + 1, i + 1].prevy = i;
+                                treilli[index + 1, i + 1].buffer = (byte)(treilli[j, i].buffer << 1 | 0x01);
+                            }
+                        }
+                    }
+                }
+            }
+
+            bitDecodedIndex = 0;
+            decodedList = new List<byte>();
+
+            for (int i = 0; i < NB_LINE; i++)
+            {
+                if (treilli[i, len / 2] != null && treilli[i, len / 2].dist < minDist)
+                {
+                    minDist = treilli[i, len / 2].dist;
+                    index = i;
+                }
+            }
+
+            getSurvivorPath(treilli[index, len / 2]);
+            decodedList.Reverse();
+
+            distance = minDist;
+
+            return decodedList; // ! TODO : retourner la dist 
+        }
+
+        public List<byte> decode(List<byte> data, ref uint distance)
+        {
+            bitCodedIndex = 0;
+            codedList = data;
+            int len = data.Count * 8;
+            int index = 0;
+            uint minDist = 0xffffffff;
+            uint dist, NB_LINE = 4, QUEUE_LEN = 8;
+
+            byte[] code = new byte[] { 0b00, 0b11, 0b10, 0b01, 0b11, 0b00, 0b01, 0b10 };
+
+            treilli = new Noeud[NB_LINE, len / 2 + 1];
+
+            treilli[0, 0] = new Noeud();
+            treilli[0, 0].dist = 0;
+            treilli[0, 0].val = 0;
+
+            for (int i = 0; i < len / 2; i++)
+            {
+                byte buff = getBits();
+                for (int j = 0; j < NB_LINE; j++)
+                {
+                    if (treilli[j, i] != null)
+                    {
+                        index = (2 * j) % 4;
+
+                        if (treilli[index, i + 1] == null)
+                            treilli[index, i + 1] = new Noeud();
+
+                        dist = HammingDistance((byte)(buff & 0x03), code[(2 * j)]) + treilli[j, i].dist;
+
+                        if (dist < treilli[index, i + 1].dist)
+                        {
+                            treilli[index, i + 1].dist = dist;
+                            treilli[index, i + 1].val = 0;
+                            treilli[index, i + 1].prevx = j;
+                            treilli[index, i + 1].prevy = i;
+                        }
+
+                        if (i < len / 2 - QUEUE_LEN)
+                        {
+                            if (treilli[index + 1, i + 1] == null)
+                                treilli[index + 1, i + 1] = new Noeud();
+
+                            dist = HammingDistance((byte)(buff & 0x03), code[(2 * j) + 1]) + treilli[j, i].dist;
+
+                            if (dist < treilli[index + 1, i + 1].dist)
+                            {
+                                treilli[index + 1, i + 1].dist = dist;
+                                treilli[index + 1, i + 1].val = 1;
+                                treilli[index + 1, i + 1].prevx = j;
+                                treilli[index + 1, i + 1].prevy = i;
+                            }
+                        }
+                    }
+                }
+            }
+
+            bitDecodedIndex = 0;
+            decodedList = new List<byte>();
+
+            for (int i = 0; i < NB_LINE; i++)
+            {
+                if (treilli[i, len / 2] != null && treilli[i, len / 2].dist < minDist)
+                {
+                    minDist = treilli[i, len / 2].dist;
+                    index = i;
+                }
+            }
+
+            getSurvivorPath(treilli[index, len / 2]);
+            decodedList.Reverse();
+
+            distance = minDist;
+
+            //PrintTreilli(treilli[treilli[index, len / 2].prevx, treilli[index, len / 2].prevy], treilli.GetLength(1));
+            //Print2DArray(treilli);
+
+            return decodedList; // ! TODO : retourner la dist 
+        }
+
+        private void getSurvivorPath(Noeud survivor)
+        {
+            if (survivor.prevx == -1) return;
+            setBit(survivor.val);
+            getSurvivorPath(treilli[survivor.prevx, survivor.prevy]);
+
+            //Console.WriteLine(survivor.val);
+        }
+
+        /*private void PrintTreilli(Noeud survivor, int index)
+        {
+            //Console.SetCursorPosition(1, index);
+            Console.WriteLine(" " + survivor.val + " \t");
+            if (survivor.prevx == -1) return;
+            PrintTreilli(treilli[survivor.prevx, survivor.prevy], index - 1);
+        }
+
+        private void Print2DArray(Noeud[,] matrix)
+        {
+            uint mindist = 0xffffffff;
+
+            Console.WriteLine("00 \t01 \t10 \t11 \t");
+
+            for (int i = 2; i < matrix.GetLength(1) - 8; i++)
+            {
+                for (int j = 0; j < matrix.GetLength(0); j++)
+                {
+                    if (matrix[j, i] != null)
+                    {
+                        if (mindist > matrix[j, i].dist) mindist = matrix[j, i].dist;
+                    }
+                }
+
+                if (i % 9 != 0)
+                {
+                    for (int j = 0; j < matrix.GetLength(0); j++)
+                    {
+                        if (matrix[j, i] != null)
+                        {
+                            // Set the Foreground color to blue 
+                            if (mindist == matrix[j, i].dist)
+                            {
+                                Console.Write(" X \t");
+                            }
+                            else
+                            {
+                                Console.Write(" . \t");
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Console.Write("00 \t01 \t10 \t11 \t");
+                }
+
+                Console.WriteLine();
+            }
+        }*/
+    }
+}
+codecorrecteur.cs
+Displaying codecorrecteur.cs.

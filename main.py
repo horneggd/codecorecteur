@@ -1,5 +1,6 @@
 import serial
 from time import sleep 
+import logging 
 
 
 #cecip est un code correcteur 2 bits sur 16
@@ -46,13 +47,21 @@ class corrector_code:
             byte >>= 1
         return (res & 1) 
 
+    def hamming_distance(a, b):
+        dist = 0
+        xor = a ^ b
+        while not xor:
+            dist += xor & 1
+            xor >>= 1
+        return dist
+
     def encode(self, data):
         g1 = 0x4f
         g2 = 0x6d
         buff = 0
         encode_out = []
         for i in range(0, len(data)):
-            buff_in = data(1)
+            buff_in = data[i]
             buff_out = 0
             for j in data:
                 buff += buff_in & 0x01
@@ -64,15 +73,19 @@ class corrector_code:
                 buff_in >>= 1
             encode_out.append(buff_out >> 8)
             encode_out.append(buff_out & 0x00ff)
+        print("code = %s encoded = %s" % (data, encode_out))
         return encode_out
 
         #ici la fonction qui encode se que tu veux envoyer
 
-    def decode():
+    def decode(self, data, distance):
+        bit
         #ici retourne la le text apres decodage
         pass
         
 
 if __name__ == '__main__':
-    uart = rs232_bus()
+    # uart = rs232_bus()
+    code_corecteur = corrector_code()
+    code_corecteur.encode([0,1,0,1,0,0,1,1])
 
